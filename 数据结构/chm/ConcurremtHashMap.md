@@ -5,7 +5,7 @@
   - -1：正在初始化/扩容转移数据，在初始化的时候会设置
 - ForwardingNode 含义
   - 正在扩容
-```
+```java
     public ConcurrentHashMap(int initialCapacity) {
         // 判断传入的初始大小不能小于0
         if (initialCapacity < 0)
@@ -17,7 +17,7 @@
     }
 ```
 - put 源码注释解析
-```
+```java
     final V putVal(K key, V value, boolean onlyIfAbsent) {
         // key 和 value 都不能为空
         if (key == null || value == null) throw new NullPointerException();
@@ -88,7 +88,7 @@
     }
 ```
 - 初始化  
-```
+```java
     private final Node<K,V>[] initTable() {
         Node<K,V>[] tab; int sc;
         while ((tab = table) == null || tab.length == 0) {
@@ -116,7 +116,7 @@
     }
 ```
 - 帮忙转移数据
-```
+```java
     final Node<K,V>[] helpTransfer(Node<K,V>[] tab, Node<K,V> f) {
         Node<K,V>[] nextTab; int sc;
         // tab不为空，且正在转移
@@ -139,7 +139,7 @@
     }
 ```
 - 计算扩容戳
-```
+```java
     static final int resizeStamp(int n) {
         // 获取 n 高位的0的个数
         // 1 << (16-1) ==>> 1 左移 15位
