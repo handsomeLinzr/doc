@@ -75,8 +75,8 @@
                     }
                 }
                 if (binCount != 0) {
-                    if (binCount >= TREEIFY_THRESHOLD)
-                        treeifyBin(tab, i);
+                    if (binCount >= TREEIFY_THRESHOLD)   // 层级大于等于8，这里统计的是添加天的层级
+                        treeifyBin(tab, i);    // 树化
                     if (oldVal != null)
                         return oldVal;
                     break;
@@ -147,3 +147,225 @@
         return Integer.numberOfLeadingZeros(n) | (1 << (RESIZE_STAMP_BITS - 1));
     }
 ```
+-- 红黑树化
+```java
+    private final void treeifyBin(Node<K,V>[] tab, int index) {
+        Node<K,V> b; int n, sc;
+        if (tab != null) {
+            if ((n = tab.length) < MIN_TREEIFY_CAPACITY)  // 数据量小于 64， 则进行扩容，不做树化操作
+                tryPresize(n << 1);  // 扩容，传入的数为表长度的两倍
+            else if ((b = tabAt(tab, index)) != null && b.hash >= 0) {
+                // 红黑树化
+                synchronized (b) {
+                    if (tabAt(tab, index) == b) {
+                        TreeNode<K,V> hd = null, tl = null;
+                        for (Node<K,V> e = b; e != null; e = e.next) {
+                            TreeNode<K,V> p =
+                                new TreeNode<K,V>(e.hash, e.key, e.val,
+                                                  null, null);
+                            if ((p.prev = tl) == null)
+                                hd = p;
+                            else
+                                tl.next = p;
+                            tl = p;
+                        }
+                        setTabAt(tab, index, new TreeBin<K,V>(hd));
+                    }
+                }
+            }
+        }
+    }
+```
+- 尝试扩容
+```java
+    private final void tryPresize(int size) {
+        // 判断传入的数是不是大于最大容量的一半，最大容量 = 1 << 30
+        // 若是，则 c = 最大容量；若不是，则 c = 大于传入的数，且最近的2的幂次方
+        int c = (size >= (MAXIMUM_CAPACITY >>> 1)) ? MAXIMUM_CAPACITY :
+            tableSizeFor(size + (size >>> 1) + 1);
+        int sc;
+        while ((sc = sizeCtl) >= 0) {  // sc用来缓存 sizeCtl 的值，大于等于0则是正常的情况，表示当前没有其他线程在扩容
+            Node<K,V>[] tab = table; int n;
+            if (tab == null || (n = tab.length) == 0) {   // 当前还没有tab，或者没有数据
+                n = (sc > c) ? sc : c;     // 获取 sizeCtl 和 c 中最大的那个
+                if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {  // cas 设置 sizeCtl = -1，设置成功后，可进入初始化阶段
+                    try {
+                        if (table == tab) {  // 再次判断
+                            @SuppressWarnings("unchecked")
+                            Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];   // 创建扩容后的数组
+                            table = nt;     // 将扩容后的数组赋值给 table
+                            sc = n - (n >>> 2);    // sc 记录下个扩容阈值，即  length * 0.75
+                        }
+                    } finally {
+                        sizeCtl = sc;
+                    }
+                }
+            }
+            else if (c <= sc || n >= MAXIMUM_CAPACITY)
+                // c <= sc  说明已经有别的线程扩容完成了
+                // n >= MAXIMUM_CAPACITY  说明已经达到chm的最大量，不能扩了
+                break;
+            else if (tab == table) {  // 继续判断，是否table没被别的线程改到，是则可以进行扩容
+                int rs = resizeStamp(n);   // n为扩容目标容量，根据n获取当前的扩容戳 rs， rs ==>>  第16位为1，其他的表示 n 左边有多少个0
+                if (sc < 0) {    // sc < 0 则说明有其他线程已经在进行扩容了
+                    Node<K,V>[] nt;
+                    if ((sc >>> RESIZE_STAMP_SHIFT) != rs || sc == rs + 1 ||
+                        sc == rs + MAX_RESIZERS || (nt = nextTable) == null ||
+                        transferIndex <= 0)
+                        // sc >>> 16  != rs  说明不是当前的扩容戳，可能别的线程已经扩容完毕
+                        // sc == rs + 1 说明扩容结束（因为当前其他线程在扩容，但是 sc == rs+1 说明正在扩容的线程数 = 0，则只有扩容结束了才会出现这样）
+                        // sc == rs + MAX_RESIZERS  已经达到最大扩容线程数
+                        // nextTable == null  没有需要进行转移的数
+                        // transferIndex <= 0
+                        break;
+                    if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1)) // cas设置 sizeCtl = sc + 1，表示多一个线程（当前线程）也加入扩容了
+                        // 设置成功，进入扩容， nt
+                        transfer(tab, nt);
+                }
+                // rs << 16 位，即将原来的数放到高16位，低16位表示表示有 n-1 个线程在扩容；这里 +2 是因为 +1+1，1表示当前一个线程，两一个1是作为固定标识
+                // 至此，sizeCtl ==>> 最高位是1，接下来15位表示扩容后大小，最后16位表示当前扩容线程数+1
+                // cas 设置 sizeCtl
+                else if (U.compareAndSwapInt(this, SIZECTL, sc,
+                                             (rs << RESIZE_STAMP_SHIFT) + 2))
+                    // cas 成功，进入扩容
+                    transfer(tab, null);
+            }
+        }
+    }
+```
+- 扩容和复制转移数据
+```java
+private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
+        int n = tab.length, stride;
+        if ((stride = (NCPU > 1) ? (n >>> 3) / NCPU : n) < MIN_TRANSFER_STRIDE)
+            stride = MIN_TRANSFER_STRIDE; // subdivide range   一个线程处理的数量最小为16
+        if (nextTab == null) {            // initiating  最开始进行扩容
+            try {
+                @SuppressWarnings("unchecked")
+                Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n << 1];   // 扩大一倍
+                nextTab = nt;   // 赋值给  nextTab
+            } catch (Throwable ex) {      // try to cope with OOME
+                sizeCtl = Integer.MAX_VALUE;
+                return;
+            }
+            nextTable = nextTab;   // 赋值给了全员变量  nextTable
+            transferIndex = n;     // 赋值 n，表示当前转移的是 n 位置
+        }
+        int nextn = nextTab.length;
+        ForwardingNode<K,V> fwd = new ForwardingNode<K,V>(nextTab);
+        boolean advance = true;
+        boolean finishing = false; // to ensure sweep before committing nextTab
+        for (int i = 0, bound = 0;;) {
+            Node<K,V> f; int fh;
+            while (advance) {
+                int nextIndex, nextBound;
+                if (--i >= bound || finishing)
+                    advance = false;
+                else if ((nextIndex = transferIndex) <= 0) {
+                    i = -1;
+                    advance = false;
+                }
+                else if (U.compareAndSwapInt
+                         (this, TRANSFERINDEX, nextIndex,
+                          nextBound = (nextIndex > stride ?
+                                       nextIndex - stride : 0))) {
+                    bound = nextBound;
+                    i = nextIndex - 1;
+                    advance = false;
+                }
+            }
+            if (i < 0 || i >= n || i + n >= nextn) {
+                int sc;
+                if (finishing) {
+                    nextTable = null;
+                    table = nextTab;
+                    sizeCtl = (n << 1) - (n >>> 1);
+                    return;
+                }
+                if (U.compareAndSwapInt(this, SIZECTL, sc = sizeCtl, sc - 1)) {
+                    if ((sc - 2) != resizeStamp(n) << RESIZE_STAMP_SHIFT)
+                        return;
+                    finishing = advance = true;
+                    i = n; // recheck before commit
+                }
+            }
+            else if ((f = tabAt(tab, i)) == null)
+                advance = casTabAt(tab, i, null, fwd);
+            else if ((fh = f.hash) == MOVED)
+                advance = true; // already processed
+            else {
+                synchronized (f) {
+                    if (tabAt(tab, i) == f) {
+                        Node<K,V> ln, hn;
+                        if (fh >= 0) {
+                            int runBit = fh & n;
+                            Node<K,V> lastRun = f;
+                            for (Node<K,V> p = f.next; p != null; p = p.next) {
+                                int b = p.hash & n;
+                                if (b != runBit) {
+                                    runBit = b;
+                                    lastRun = p;
+                                }
+                            }
+                            if (runBit == 0) {
+                                ln = lastRun;
+                                hn = null;
+                            }
+                            else {
+                                hn = lastRun;
+                                ln = null;
+                            }
+                            for (Node<K,V> p = f; p != lastRun; p = p.next) {
+                                int ph = p.hash; K pk = p.key; V pv = p.val;
+                                if ((ph & n) == 0)
+                                    ln = new Node<K,V>(ph, pk, pv, ln);
+                                else
+                                    hn = new Node<K,V>(ph, pk, pv, hn);
+                            }
+                            setTabAt(nextTab, i, ln);
+                            setTabAt(nextTab, i + n, hn);
+                            setTabAt(tab, i, fwd);
+                            advance = true;
+                        }
+                        else if (f instanceof TreeBin) {
+                            TreeBin<K,V> t = (TreeBin<K,V>)f;
+                            TreeNode<K,V> lo = null, loTail = null;
+                            TreeNode<K,V> hi = null, hiTail = null;
+                            int lc = 0, hc = 0;
+                            for (Node<K,V> e = t.first; e != null; e = e.next) {
+                                int h = e.hash;
+                                TreeNode<K,V> p = new TreeNode<K,V>
+                                    (h, e.key, e.val, null, null);
+                                if ((h & n) == 0) {
+                                    if ((p.prev = loTail) == null)
+                                        lo = p;
+                                    else
+                                        loTail.next = p;
+                                    loTail = p;
+                                    ++lc;
+                                }
+                                else {
+                                    if ((p.prev = hiTail) == null)
+                                        hi = p;
+                                    else
+                                        hiTail.next = p;
+                                    hiTail = p;
+                                    ++hc;
+                                }
+                            }
+                            ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) :
+                                (hc != 0) ? new TreeBin<K,V>(lo) : t;
+                            hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) :
+                                (lc != 0) ? new TreeBin<K,V>(hi) : t;
+                            setTabAt(nextTab, i, ln);
+                            setTabAt(nextTab, i + n, hn);
+                            setTabAt(tab, i, fwd);
+                            advance = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+```
+
