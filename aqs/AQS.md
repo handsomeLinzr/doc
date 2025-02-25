@@ -305,7 +305,9 @@ final Node predecessor()    // 上个节点
                 // 失败，设置 p 的 status = -1
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())   // 阻塞在这里
-                    interrupted = true;
+                    // 进入这里，说明 parkAndCheckInterrupt 方法返回true，即当前线程有被打断的标识，会继续循环到外边执行自我打算的方法
+                    // 如果是调用 lockInterruptibly 方法，则是这里抛出异常，不会再循环，所以 lockInterruptibly 能立刻响应打断
+                    interrupted = true;  
             }
         } finally {
             if (failed)
@@ -358,6 +360,11 @@ final Node predecessor()    // 上个节点
   - 公平锁 VS 非公平锁
     1. 非公平锁在获取锁时，先尝试CAS修改aqs的state为1，成功则获得锁，失败则继续走公平锁逻辑
     2. 非公平锁在继续走公平锁逻辑中，**tryAcquire**中不会查看是否有前置等待节点，而是直接CAS设置state
+- 区别
+  - lock —— 正常处理
+  - lockInterruptibly —— 在 doAcquireInterruptibly 方法中 LockSupport.park(this) 阻塞，唤醒有检查有打算标识则直接抛出打算异常
+  - tryLock —— 尝试获取锁，直接判断 state 是否为0 且 cas 设置state，成功则获取锁，失败则返回 false
+  - tryLock(5, TimeUnit.SECONDS) —— 带超时时间尝试获取锁，先按tryLock尝试获取锁，失败则调用**doAcquireNanos**方法带超时时间获取锁，即获取锁失败后则带超时时间阻塞线程
 
 - 默认是非公平锁
 ```java
@@ -406,6 +413,43 @@ final Node predecessor()    // 上个节点
         return false;
     }
 ```
+- 带超时时间的获取锁
+```java
+    private boolean doAcquireNanos(int arg, long nanosTimeout)
+            throws InterruptedException {
+        // 判断超时时间不能小于0，否则直接返回 false
+        if (nanosTimeout <= 0L)
+            return false;
+        final long deadline = System.nanoTime() + nanosTimeout;   // deadline为截止时间
+        final Node node = addWaiter(Node.EXCLUSIVE);   // 添加节点到尾
+        boolean failed = true;    
+        try {
+            for (;;) {   
+                final Node p = node.predecessor();       // 获取前一个节点
+                if (p == head && tryAcquire(arg)) {    // 前一个节点是 head，则尝试获取锁
+                    setHead(node);
+                    p.next = null; // help GC
+                    failed = false;
+                    return true;
+                }
+                // 获取锁失败，获得剩下的超时时间
+                nanosTimeout = deadline - System.nanoTime();
+                if (nanosTimeout <= 0L)  
+                    // 超时时间小于0，则已经超时，直接返回 false
+                    return false;
+                if (shouldParkAfterFailedAcquire(p, node) &&     // 第一次循环设置前一个节点状态为 -1，第二次循环返回true
+                    nanosTimeout > spinForTimeoutThreshold)      // 是否小于 1000 纳秒，不超过1000则继续循环，超过则需要阻塞
+                    LockSupport.parkNanos(this, nanosTimeout);   // 带超时时间的阻塞
+                if (Thread.interrupted())                  
+                    // 被中断，抛出异常
+                    throw new InterruptedException();
+            }
+        } finally {
+            if (failed)
+                cancelAcquire(node);
+        }
+    }
+```
 - 解锁
 ```java
     public void unlock() {
@@ -426,4 +470,19 @@ final Node predecessor()    // 上个节点
         return false;
     }
 ```
+# ReadWriteLock
+- ReadWriteLock 是一个接口，有两个实现类，分别是 ReentrantReadWriteLock，ReadWriteLock.ReadLock，ReadWriteLock.WriteLock, 读写锁
+- 读读不互斥，读写互斥，写写互斥
+- 默认非公平锁
+
+- 初始化
+```java
+    // 默认不传为 false，默认非公平锁
+    public ReentrantReadWriteLock(boolean fair) {
+        sync = fair ? new FairSync() : new NonfairSync();   // 读写锁内容共享的aqs
+        readerLock = new ReadLock(this);   // 读锁
+        writerLock = new WriteLock(this);  // 写锁
+    }
+```
+
 

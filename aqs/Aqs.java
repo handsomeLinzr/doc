@@ -1,6 +1,10 @@
 package aqs;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author linzherong
@@ -8,11 +12,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Aqs {
 
-    public static void main(String[] args) {
-        ReentrantLock lock = new ReentrantLock();
-        lock.lock();
-        lock.unlock();
-        lock.unlock();
+    public static void main(String[] args) throws Exception {
+
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        Lock rLock = lock.readLock();
+        Lock wLock = lock.writeLock();
+
     }
 
 }
