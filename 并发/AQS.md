@@ -474,6 +474,18 @@ final Node predecessor()    // 上个节点
 - ReadWriteLock 是一个接口，有两个实现类，分别是 ReentrantReadWriteLock，ReadWriteLock.ReadLock，ReadWriteLock.WriteLock, 读写锁
 - 读读不互斥，读写互斥，写写互斥
 - 默认非公平锁
+- 读锁  ReadWriteLock.ReadLock
+  - 内部维护一个 aqs 队列，和写锁共享
+- 写锁  ReadWriteLock.WriteLock
+  - 内部维护一个 aqs 队列，和读锁共享
+
+- 关键变量，对 state 进行偏移后记录的值
+```java
+    static final int SHARED_SHIFT   = 16;                       // 高16位, 记录共享锁数量
+    static final int SHARED_UNIT    = (1 << SHARED_SHIFT);      // 1<<16,
+    static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;  // 1<<16-1，最大数量
+    static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;  // 低16位，记录排他锁数量
+```
 
 - 初始化
 ```java
@@ -483,6 +495,52 @@ final Node predecessor()    // 上个节点
         readerLock = new ReadLock(this);   // 读锁
         writerLock = new WriteLock(this);  // 写锁
     }
+```
+- 读锁
+```java
+    public void lock() {
+        sync.acquireShared(1);   // 获取共享锁
+    }
+```
+```java
+    public final void acquireShared(int arg) {
+        if (tryAcquireShared(arg) < 0)
+            doAcquireShared(arg);
+    }
+```
+```java
+        protected final int tryAcquireShared(int unused) {
+            Thread current = Thread.currentThread();  // 获取当前线程
+            int c = getState();       // 获取state，state记录了很多信息
+            if (exclusiveCount(c) != 0 &&      // 判断当前aqs是否有排他锁
+                getExclusiveOwnerThread() != current)   // 如果当前aqs队列有排他锁，则再看当前aqs队列的持有线程是不是自己
+                return -1;                 // 有排他锁，且不是自己，则获取锁失败，返回-1
+            // 没有排他锁，或者当前自己就是这个aqs的线程持有者
+            // 先获取当前aqs的共享锁数量
+            int r = sharedCount(c);
+            // 判断当前读锁是否需要被阻塞，内部实现则是
+                // 公平锁 —— 直接去看是否 头结点下个节点是不是自己，不是则返回false，需要阻塞（因为是公平锁，所以按顺序走下来即可）
+                // 非公平锁 —— 直接看头结点的下一个节点是否非自己线程的排他锁，是则返回true（）
+            if (!readerShouldBlock() && 
+                r < MAX_COUNT &&    // 共享锁数量小于最大值，则继续获取锁
+                compareAndSetState(c, c + SHARED_UNIT)) {    // 设置 state 的值，在 state 的高16位上加1，表示共享锁数量加1
+                if (r == 0) {
+                    firstReader = current;
+                    firstReaderHoldCount = 1;
+                } else if (firstReader == current) {
+                    firstReaderHoldCount++;
+                } else {
+                    HoldCounter rh = cachedHoldCounter;
+                    if (rh == null || rh.tid != getThreadId(current))
+                        cachedHoldCounter = rh = readHolds.get();
+                    else if (rh.count == 0)
+                        readHolds.set(rh);
+                    rh.count++;
+                }
+                return 1;
+            }
+            return fullTryAcquireShared(current);
+        }
 ```
 
 

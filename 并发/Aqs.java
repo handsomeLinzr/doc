@@ -1,4 +1,4 @@
-package aqs;
+package 并发;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -16,7 +16,11 @@ public class Aqs {
 
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         Lock rLock = lock.readLock();
+        rLock.lock();
+
+
         Lock wLock = lock.writeLock();
+
 
     }
 
