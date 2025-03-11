@@ -7,14 +7,12 @@ import java.util.Objects;
  * @author linzherong
  * @date 2025/2/26 22:01
  */
-public class Xin1 {
+public class Day1 {
 
     public static void main(String[] args) {
-        Xin1 xin1 = new Xin1();
-//        System.out.println(xin1.multiple(5));
-        int[] arr = {1,7,5,8,3,-1,-5,12,3,67,36};
-//        xin1.selectSort(arr);
-        xin1.insertSort(arr);
+        Day1 day1 = new Day1();
+        int[] arr = {1,7,5,8,3,-1,-5,12,3,67,36,-71,98};
+        day1.selectSort(arr);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -100,6 +98,9 @@ public class Xin1 {
 
 
     private void swap(int[] arr, int a, int b) {
+        if (a == b) {
+            return;
+        }
         arr[a] = arr[a] ^ arr[b];
         arr[b] = arr[a] ^ arr[b];
         arr[a] = arr[a] ^ arr[b];
