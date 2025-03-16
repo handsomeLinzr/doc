@@ -11,9 +11,26 @@ public class Day1 {
 
     public static void main(String[] args) {
         Day1 day1 = new Day1();
-        int[] arr = {1,7,5,8,3,-1,-5,12,3,67,36,-71,98};
-        day1.selectSort(arr);
-        System.out.println(Arrays.toString(arr));
+        for (int i = 0; i < 100_0000; i++) {
+            int[] array = ArrayUtils.generalArray(20, 100);
+            int[] bubbleSort1 = day1.bubbleSort1(array);
+            int[] selectSort1 = day1.selectSort1(array);
+            int[] insertSort1 = day1.insertSort1(array);
+            Arrays.sort(array);
+            if (!day1.equalSort(bubbleSort1, array)) {
+                System.out.println("冒泡出错");
+                return;
+            }
+            if (!day1.equalSort(selectSort1, array)) {
+                System.out.println("选择出错");
+                return;
+            }
+            if (!day1.equalSort(insertSort1, array)) {
+                System.out.println("插入出错");
+                return;
+            }
+        }
+        System.out.println("正确");
     }
 
     /**
@@ -105,5 +122,81 @@ public class Day1 {
         arr[b] = arr[a] ^ arr[b];
         arr[a] = arr[a] ^ arr[b];
     }
+
+    /**
+     * 排序是否相同
+     */
+    private boolean equalSort(int[] a1, int[] a2) {
+        if (a1.length != a2.length) {
+            return false;
+        }
+        for (int i = 0; i < a1.length; i++) {
+            if (a1[i] != a2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //-----------------------------------------------------------
+
+    public int[] bubbleSort1(int[] arr) {
+        int[] array = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            array[i] = arr[i];
+        }
+        if (array.length <= 1) {
+            return array;
+        }
+        // 排序
+        for (int right = arr.length - 1; right > 0; right--) {
+            for (int i = 0; i < array.length - 1; i++) {
+                if (array[i] > array[i+1]) {
+                    swap(array, i, i+1);
+                }
+            }
+        }
+        return array;
+    }
+
+    public int[] selectSort1(int[] arr) {
+        int[] array = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            array[i] = arr[i];
+        }
+        if (array.length <= 1) {
+            return array;
+        }
+        for (int index = 0; index < array.length-1; index++) {
+            int min = index;
+            for (int i = index + 1; i < array.length; i++) {
+                if (array[min] > array[i]) {
+                    min = i;
+                }
+            }
+            swap(array, index, min);
+        }
+        return array;
+    }
+
+    public int[] insertSort1(int[] arr) {
+        int[] array = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            array[i] = arr[i];
+        }
+        if (array.length <= 1) {
+            return array;
+        }
+        for (int index = 1; index < array.length; index++) {
+            int num = arr[index];
+            int i = index;
+            for (; i > 0 && num < array[i-1]; i--) {
+                array[i] = array[i-1];
+            }
+            array[i] = num;
+        }
+        return array;
+    }
+
 
 }
