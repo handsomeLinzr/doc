@@ -21,7 +21,7 @@ public class Day4 {
 
     public static void main(String[] args) {
         Day4 day4 = new Day4();
-        for (int i = 0; i < 100_0000; i++) {
+        for (int i = 0; i < 1; i++) {
 //            LinkedNode linkedNode = NodeUtils.generalLinkedNode(20, 20);
 //            LinkedNode copy = linkedNode;
 //            List<Integer> list = new ArrayList<>();
@@ -187,35 +187,38 @@ public class Day4 {
 //            if (sum1 != sum2) {
 //                System.out.println("出错了");
 //            }
-            int[] array1 = ArrayUtils.generalArray(6, 20);
-            Arrays.sort(array1);
-            LinkedNode node1 = NodeUtils.generalNode(array1);
-            int[] array2 = ArrayUtils.generalArray(6, 20);
-            Arrays.sort(array2);
-            LinkedNode node2 = NodeUtils.generalNode(array2);
-
-            // 组合，排序
-            int[] arr = new int[array1.length + array2.length];
-            for (int j = 0; j < array1.length; j++) {
-                arr[j] = array1[j];
-            }
-            for (int j = 0; j < array2.length; j++) {
-                arr[j + array1.length] = array2[j];
-            }
-            Arrays.sort(arr);
-
-            // 排序
-            LinkedNode node = day4.nodeMerge(node1, node2);
-            Integer[] integers = NodeUtils.toArr(node);
-            if (arr.length != integers.length) {
-                System.out.println("出错了");
-            }
-            for (int j = 0; j < arr.length; j++) {
-                if (arr[j] != integers[j]) {
-                    System.out.println("出错了");
-                }
-            }
-
+//            int[] array1 = ArrayUtils.generalArray(6, 20);
+//            Arrays.sort(array1);
+//            LinkedNode node1 = NodeUtils.generalNode(array1);
+//            int[] array2 = ArrayUtils.generalArray(6, 20);
+//            Arrays.sort(array2);
+//            LinkedNode node2 = NodeUtils.generalNode(array2);
+//
+//            // 组合，排序
+//            int[] arr = new int[array1.length + array2.length];
+//            for (int j = 0; j < array1.length; j++) {
+//                arr[j] = array1[j];
+//            }
+//            for (int j = 0; j < array2.length; j++) {
+//                arr[j + array1.length] = array2[j];
+//            }
+//            Arrays.sort(arr);
+//
+//            // 排序
+//            LinkedNode node = day4.nodeMerge(node1, node2);
+//            Integer[] integers = NodeUtils.toArr(node);
+//            if (arr.length != integers.length) {
+//                System.out.println("出错了");
+//            }
+//            for (int j = 0; j < arr.length; j++) {
+//                if (arr[j] != integers[j]) {
+//                    System.out.println("出错了");
+//                }
+//            }
+            LinkedNode node1 = NodeUtils.generalNode(new int[]{1, 2, 5, 6, 3, 5, 7, 4, 2,3,5});
+            NodeUtils.printLinkedNode(node1);
+            LinkedNode node2 = day4.reverseKGroup(node1, 3);
+            NodeUtils.printLinkedNode(node2);
         }
         System.out.println("成功");
     }
@@ -520,8 +523,66 @@ public class Day4 {
     /**
      * k个元素翻转
      */
-    public LinkedNode reverseK(LinkedNode node, int k) {
-        return null;
+    public LinkedNode reverseKGroup(LinkedNode head, int k) {
+        // 这里第一次获取到的，就是最后的头结点
+        LinkedNode result = getNextKNode(head, k);
+        // 一次翻转都不够，直接返回
+        if (Objects.isNull(result)) {
+            return head;
+        }
+        LinkedNode endNode= result;
+        LinkedNode begin = head;
+        // 第一次，头部的前部一个为null
+        LinkedNode pre = null;
+        // 符合翻转规则
+        while (Objects.nonNull(endNode)) {
+            // 翻转
+            reverseNode(pre, begin, endNode);
+            // 翻转后这一段的最开始节点就是之前的开始节点
+            pre = begin;
+            // 下次翻转从endNodo的下一个节点开始
+            begin = begin.next;
+            // 获取下一次翻转的最后节点
+            endNode = getNextKNode(begin, k);
+        }
+        return result;
+    }
+
+    /**
+     * 获取到偏移k之后的node节点
+     * @param node
+     * @return
+     */
+    public LinkedNode getNextKNode(LinkedNode node, int k) {
+        while (--k > 0 && Objects.nonNull(node)) {
+            node = node.next;
+        }
+        return node;
+    }
+
+    /**
+     * 翻转
+     */
+    public LinkedNode reverseNode(LinkedNode begin1, LinkedNode begin, LinkedNode end) {
+        // 当前处理节点
+        LinkedNode current = begin;
+        // 记录end的下一个节点
+        LinkedNode finalNode = end.next;
+        // 记录下一个节点
+        LinkedNode next;
+        // 上一个节点（一开始指定为end的下一个节点，因为需要将第一个节点的next指向它）
+        LinkedNode pre = finalNode;
+        while (current != finalNode) {
+            next = current.next;
+            current.next = pre;
+            pre = current;
+            current = next;
+        }
+        // 最后把前边的尾巴接住
+        if (Objects.nonNull(begin1)) {
+            begin1.next = end;
+        }
+        return end;
     }
 
 
