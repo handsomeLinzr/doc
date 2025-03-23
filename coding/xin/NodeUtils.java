@@ -11,13 +11,13 @@ import java.util.Objects;
  */
 public class NodeUtils {
 
-    public static LinkedNode generalLinkedNode(int length, int max) {
+    public static ListNode generalLinkedNode(int length, int max) {
         // 尾节点
-        LinkedNode head = new LinkedNode((int) (Math.random() * max) + 1, null);
+        ListNode head = new ListNode((int) (Math.random() * max) + 1, null);
         length = (int) (Math.random() * length) + 1;
         for (int i = 0; i < length; i++) {
             int value = (int) (Math.random() * max) + 1;
-            head = new LinkedNode(value, head);
+            head = new ListNode(value, head);
         }
         return head;
     }
@@ -34,7 +34,10 @@ public class NodeUtils {
         return head;
     }
 
-    public static void printLinkedNode(LinkedNode node) {
+    public static void printLinkedNode(ListNode node) {
+        if (node == null) {
+            return;
+        }
         StringBuilder sb = new StringBuilder(String.valueOf(node.getValue()));
         while (node.hasNext()) {
             node = node.getNext();
@@ -43,15 +46,15 @@ public class NodeUtils {
         System.out.println(sb);
     }
 
-    public static LinkedNode generalNode(int[] arr) {
-        LinkedNode head = null;
+    public static ListNode generalNode(int[] arr) {
+        ListNode head = null;
         for (int i = arr.length - 1; i >= 0; i--) {
-            head = new LinkedNode(arr[i], head);
+            head = new ListNode(arr[i], head);
         }
         return head;
     }
 
-    public static Integer[] toArr(LinkedNode node) {
+    public static Integer[] toArr(ListNode node) {
         List<Integer> list = new ArrayList<>();
         while (Objects.nonNull(node)) {
             list.add(node.value);
@@ -62,8 +65,8 @@ public class NodeUtils {
 
     public static void main(String[] args) {
         int[] arr = {1,5,3};
-        LinkedNode linkedNode = generalNode(arr);
-        Integer[] integers = toArr(linkedNode);
+        ListNode listNode = generalNode(arr);
+        Integer[] integers = toArr(listNode);
         System.out.println(Arrays.toString(integers));
     }
 

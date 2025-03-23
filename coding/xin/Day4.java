@@ -215,15 +215,15 @@ public class Day4 {
 //                    System.out.println("出错了");
 //                }
 //            }
-            LinkedNode node1 = NodeUtils.generalNode(new int[]{1, 2, 5, 6, 3, 5, 7, 4, 2,3,5});
+            ListNode node1 = NodeUtils.generalNode(new int[]{1, 2, 5, 6, 3, 5, 7, 4, 2,3,5});
             NodeUtils.printLinkedNode(node1);
-            LinkedNode node2 = day4.reverseKGroup(node1, 3);
+            ListNode node2 = day4.reverseKGroup(node1, 3);
             NodeUtils.printLinkedNode(node2);
         }
         System.out.println("成功");
     }
 
-    private int getNum(LinkedNode node) {
+    private int getNum(ListNode node) {
         int sum = 0;
         int mul = 1;
         while (Objects.nonNull(node)) {
@@ -239,11 +239,11 @@ public class Day4 {
      * 1.先记录next节点
      * 2.处理当前节点的next
      */
-    public LinkedNode reverseLinkedList(LinkedNode node) {
+    public ListNode reverseLinkedList(ListNode node) {
         // 头节点
-        LinkedNode head = node;
+        ListNode head = node;
         // 下一个节点
-        LinkedNode next = node.next;
+        ListNode next = node.next;
         // 首个节点的下一个节点指向空
         node.next = null;
         while (Objects.nonNull(next)) {
@@ -280,18 +280,18 @@ public class Day4 {
      */
     public static class LinkedListToQueue {
         // 头节点
-        LinkedNode head;
+        ListNode head;
         // 尾节点
-        LinkedNode tail;
+        ListNode tail;
         public int size;
 
         // offer  poll  peek
         public void offer(Integer num) {
             size++;
             if (Objects.isNull(head)) {
-                head = tail = new LinkedNode(num, null);
+                head = tail = new ListNode(num, null);
             } else {
-                LinkedNode node = new LinkedNode(num, null);
+                ListNode node = new ListNode(num, null);
                 tail.next = node;
                 tail = node;
             }
@@ -322,14 +322,14 @@ public class Day4 {
      * 单链表实现栈
      */
     public static class LinkedListToStack {
-        LinkedNode head;
+        ListNode head;
         public int size;
         public void push(Integer num) {
             size ++;
             if (Objects.isNull(head)) {
-                head =  new LinkedNode(num, null);
+                head =  new ListNode(num, null);
             } else {
-                head = new LinkedNode(num, head);
+                head = new ListNode(num, head);
             }
         }
 
@@ -425,7 +425,7 @@ public class Day4 {
      * 链表相加
      * @return
      */
-    public LinkedNode linkedAdd(LinkedNode a, LinkedNode b) {
+    public ListNode linkedAdd(ListNode a, ListNode b) {
 //        LinkedNode result;
 //        LinkedNode a1 = a;
 //        LinkedNode b1 = b;
@@ -454,30 +454,30 @@ public class Day4 {
         // 进位
         int carry = 0;
         int num;
-        LinkedNode node = new LinkedNode(0, null);
-        LinkedNode head = node;
+        ListNode node = new ListNode(0, null);
+        ListNode head = node;
         // 两个链都在的情况
         while (Objects.nonNull(a) && Objects.nonNull(b)) {
             num = (a.value + b.value + carry) % 10;
             carry = (a.value + b.value + carry) / 10;
             a = a.next;
             b = b.next;
-            LinkedNode linkedNode = new LinkedNode(num, null);
-            node.next = linkedNode;
-            node = linkedNode;
+            ListNode listNode = new ListNode(num, null);
+            node.next = listNode;
+            node = listNode;
         }
         // 剩下一个链的情况
-        LinkedNode last = Objects.nonNull(a)? a : b;
+        ListNode last = Objects.nonNull(a)? a : b;
         while (Objects.nonNull(last)) {
             num = (last.value + carry) % 10;
             carry = (last.value + carry) / 10;
             last = last.next;
-            LinkedNode linkedNode = new LinkedNode(num, null);
-            node.next = linkedNode;
-            node = linkedNode;
+            ListNode listNode = new ListNode(num, null);
+            node.next = listNode;
+            node = listNode;
         }
         if (carry > 0) {
-            node.next = new LinkedNode(carry, null);
+            node.next = new ListNode(carry, null);
         }
         return head.next;
     }
@@ -486,7 +486,7 @@ public class Day4 {
      * 有序链表合并
      * @return
      */
-    public LinkedNode nodeMerge(LinkedNode a, LinkedNode b) {
+    public ListNode nodeMerge(ListNode a, ListNode b) {
         if (Objects.isNull(a)) {
             return b;
         }
@@ -494,10 +494,10 @@ public class Day4 {
             return a;
         }
         // 用首个元素最小的一条作为根基
-        LinkedNode last = a.value <= b.value? a : b;
-        LinkedNode another = a == last? b : a;
-        LinkedNode result = last;
-        LinkedNode pre = last;
+        ListNode last = a.value <= b.value? a : b;
+        ListNode another = a == last? b : a;
+        ListNode result = last;
+        ListNode pre = last;
         // 两条链都存在的情况
         while (Objects.nonNull(last) && Objects.nonNull(another)) {
             if (last.value <= another.value) {
@@ -505,7 +505,7 @@ public class Day4 {
                 last = last.next;
             } else {
                 // 记录 another 的 next
-                LinkedNode next = another.next;
+                ListNode next = another.next;
                 // 将 ano 插入到 last的 pre 后边
                 pre.next = another;
                 another.next = last;
@@ -523,17 +523,17 @@ public class Day4 {
     /**
      * k个元素翻转
      */
-    public LinkedNode reverseKGroup(LinkedNode head, int k) {
+    public ListNode reverseKGroup(ListNode head, int k) {
         // 这里第一次获取到的，就是最后的头结点
-        LinkedNode result = getNextKNode(head, k);
+        ListNode result = getNextKNode(head, k);
         // 一次翻转都不够，直接返回
         if (Objects.isNull(result)) {
             return head;
         }
-        LinkedNode endNode= result;
-        LinkedNode begin = head;
+        ListNode endNode= result;
+        ListNode begin = head;
         // 第一次，头部的前部一个为null
-        LinkedNode pre = null;
+        ListNode pre = null;
         // 符合翻转规则
         while (Objects.nonNull(endNode)) {
             // 翻转
@@ -553,7 +553,7 @@ public class Day4 {
      * @param node
      * @return
      */
-    public LinkedNode getNextKNode(LinkedNode node, int k) {
+    public ListNode getNextKNode(ListNode node, int k) {
         while (--k > 0 && Objects.nonNull(node)) {
             node = node.next;
         }
@@ -563,15 +563,15 @@ public class Day4 {
     /**
      * 翻转
      */
-    public LinkedNode reverseNode(LinkedNode begin1, LinkedNode begin, LinkedNode end) {
+    public ListNode reverseNode(ListNode begin1, ListNode begin, ListNode end) {
         // 当前处理节点
-        LinkedNode current = begin;
+        ListNode current = begin;
         // 记录end的下一个节点
-        LinkedNode finalNode = end.next;
+        ListNode finalNode = end.next;
         // 记录下一个节点
-        LinkedNode next;
+        ListNode next;
         // 上一个节点（一开始指定为end的下一个节点，因为需要将第一个节点的next指向它）
-        LinkedNode pre = finalNode;
+        ListNode pre = finalNode;
         while (current != finalNode) {
             next = current.next;
             current.next = pre;

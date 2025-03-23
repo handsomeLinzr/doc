@@ -7,12 +7,12 @@ import java.util.Objects;
  * @author linzherong
  * @date 2025/3/16 14:39
  */
-public class LinkedNode {
+public class ListNode {
 
     public Integer value;
-    public LinkedNode next;
+    public ListNode next;
 
-    public LinkedNode(Integer value, LinkedNode next) {
+    public ListNode(Integer value, ListNode next) {
         this.value = value;
         this.next = next;
     }
@@ -29,11 +29,11 @@ public class LinkedNode {
         this.value = value;
     }
 
-    public LinkedNode getNext() {
+    public ListNode getNext() {
         return next;
     }
 
-    public void setNext(LinkedNode next) {
+    public void setNext(ListNode next) {
         this.next = next;
     }
 }
