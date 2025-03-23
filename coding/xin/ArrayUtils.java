@@ -40,4 +40,12 @@ public class ArrayUtils {
         return Math.random() > 0.5? 1:0;
     }
 
+    public static int[] copy(int[] arr) {
+        int[] copy = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            copy[i] = arr[i];
+        }
+        return copy;
+    }
+
 }
