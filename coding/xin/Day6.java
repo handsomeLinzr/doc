@@ -207,6 +207,34 @@ public class Day6 {
         return node;
     }
 
+    public TreeNode buildTree1(int[] inorder, int[] postorder) {
+        if (Objects.isNull(postorder) || Objects.isNull(inorder) || postorder.length == 0 || postorder.length != inorder.length) {
+            return null;
+        }
+        Map<Integer, Integer> helpMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            helpMap.put(inorder[i], i);
+        }
+        return build1(helpMap, inorder, postorder, 0, inorder.length-1, 0, postorder.length-1);
+    }
+
+    public TreeNode build1(Map<Integer, Integer> helpMap, int[] inorder, int[] postorder, int l1, int r1, int l2, int r2) {
+        if (l2 > r2) {
+            return null;
+        }
+        int val = postorder[r2];
+        TreeNode node = new TreeNode(val);
+        if (l2 == r2) {
+            return node;
+        }
+        Integer index = helpMap.get(val);
+        // 左节点占用的长度
+        int leftLength = index - l1;
+        node.left = build1(helpMap, inorder, postorder, l1, index-1, l2, l2+leftLength-1);
+        node.right = build1(helpMap, inorder, postorder, index+1, r1, l2+leftLength, r2-1);
+        return node;
+    }
+
 
     static class S {
         private String name;
