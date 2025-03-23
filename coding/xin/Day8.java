@@ -95,14 +95,13 @@ public class Day8 {
             return;
         }
         int max = arr.length - 1;
+        int length = arr.length;
         int step = 1;
-        while (step <= max) {
+        while (step < length) {
             int begin = 0;
-            int right = -1;
+            int right = 0;
             int middle = 0;
-            while (right < max) {
-                // 开始位置
-                begin = right + 1;
+            while (begin < max) {
                 if (max - begin < step) {
                     break;
                 } else {
@@ -114,6 +113,13 @@ public class Day8 {
                     right = middle + step;
                 }
                 merge(arr, begin, middle, right);
+                if (right == max) {
+                    break;
+                }
+                begin = right + 1;
+            }
+            if (step > length / 2) {
+                break;
             }
             step *= 2;
         }
