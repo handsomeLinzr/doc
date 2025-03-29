@@ -1,5 +1,6 @@
 package coding.tixi.day04;
 
+import coding.tixi.ArrayUtils;
 import coding.tixi.DoubleNode;
 import coding.tixi.ListNode;
 import coding.tixi.NodeUtils;
@@ -33,7 +34,11 @@ public class Jiegou {
 //        System.out.println(jiegou.getMax(new int[]{1,7,4,0,2,-4,-7,34,75,2,45,24}));
 //        jiegou.testRemoveValue();
 //        jiegou.testMyQueue();
-        jiegou.testMyStack();
+//        jiegou.testMyStack();
+//        jiegou.testMyStrongStack();
+//        jiegou.testStackToQueue();
+//        jiegou.testQueueToStack();
+        jiegou.testMyArrayToQueue();
     }
 
     public int getMax(int[] arr) {
@@ -304,5 +309,132 @@ public class Jiegou {
         System.out.println("成功");
     }
 
+    public void testMyStrongStack() {
+        for (int t = 0; t < 100_0000; t++) {
+            MyStrongStack stack = new MyStrongStack();
+            int[] num = ArrayUtils.generalArr(20);
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+            for (int i = 0; i < num.length; i++) {
+                stack.push(num[i]);
+                max = Math.max(num[i], max);
+                min = Math.min(num[i], min);
+                if (stack.getMax() != max) {
+                    System.out.println("错了");
+                }
+                if (stack.getMin() != min) {
+                    System.out.println("错了");
+                }
+            }
+            for (int i = num.length-1; i >= 0; i--) {
+                max = getMax(num, i);
+                min = getMin(num, i);
+                if (stack.getMax() != max) {
+                    System.out.println("错了");
+                }
+                if (stack.getMin() != min) {
+                    System.out.println("错了");
+                }
+                stack.pop();
+            }
+        }
+        System.out.println("成功");
+    }
+
+    public int getMax(int[] arr, int end) {
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i <= end; i++) {
+            max = Math.max(max, arr[i]);
+        }
+        return max;
+    }
+    public int getMin(int[] arr, int end) {
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i <= end; i++) {
+            min = Math.min(min, arr[i]);
+        }
+        return min;
+    }
+
+    public void testStackToQueue() {
+        for (int time = 0; time < 100_0000; time++) {
+            int[] num = ArrayUtils.generalArr(20);
+            LinkedList<Integer> queue = new LinkedList<>();
+            StackToQueue stackToQueue = new StackToQueue();
+            for (int i = 0; i < num.length; i++) {
+                if (Math.random() > 0.6) {
+                    queue.add(num[i]);
+                    stackToQueue.add(num[i]);
+                } else {
+                    if (queue.isEmpty()) {
+                        continue;
+                    }
+                    if (!queue.poll().equals(stackToQueue.poll())) {
+                        System.out.println("出错了");
+                    }
+                }
+            }
+            for (int i = 0; i < queue.size(); i++) {
+                if (!queue.poll().equals(stackToQueue.poll())) {
+                    System.out.println("出错了");
+                }
+            }
+        }
+        System.out.println("成功");
+    }
+
+    public void testQueueToStack() {
+        for (int time = 0; time < 100_0000; time++) {
+            Stack<Integer> stack = new Stack<>();
+            QueueToStack queueToStack = new QueueToStack();
+            int[] num = ArrayUtils.generalArr(20);
+            for (int i = 0; i < num.length; i++) {
+                if (Math.random() > 0.6) {
+                    stack.push(num[i]);
+                    queueToStack.push(num[i]);
+                } else {
+                    if (stack.isEmpty()) {
+                        continue;
+                    }
+                    if (!stack.pop().equals(queueToStack.pop())) {
+                        System.out.println("出错了");
+                    }
+                }
+            }
+            for (int i = 0; i < queueToStack.size; i++) {
+                if (!stack.pop().equals(queueToStack.pop())) {
+                    System.out.println("出错了");
+                }
+            }
+        }
+        System.out.println("成功");
+    }
+
+    public void testMyArrayToQueue() {
+        for (int time = 0; time < 100_0000; time++) {
+            int[] num = ArrayUtils.generalArr(50);
+            LinkedList<Integer> queue = new LinkedList<>();
+            MyArrayQueue arrayQueue = new MyArrayQueue(50);
+            for (int i = 0; i < num.length; i++) {
+                if (Math.random() > 0.6) {
+                    queue.add(num[i]);
+                    arrayQueue.add(num[i]);
+                } else {
+                    if (queue.isEmpty()) {
+                        continue;
+                    }
+                    if (!queue.poll().equals(arrayQueue.poll())) {
+                        System.out.println("出错了");
+                    }
+                }
+            }
+            for (int i = 0; i < queue.size(); i++) {
+                if (!queue.poll().equals(arrayQueue.poll())) {
+                    System.out.println("出错了");
+                }
+            }
+        }
+        System.out.println("成功");
+    }
 
 }

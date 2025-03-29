@@ -2,7 +2,6 @@ package coding.tixi.day04;
 
 import coding.tixi.DoubleNode;
 
-import javax.swing.plaf.PanelUI;
 import java.util.Objects;
 
 /**
