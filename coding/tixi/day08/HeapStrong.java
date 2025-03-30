@@ -15,4 +15,14 @@ package coding.tixi.day08;
  * @date 2025/3/27 00:08
  */
 public class HeapStrong {
+
+    public static void main(String[] args) {
+
+    }
+
+    public int maxCover1(int[][] lines) {
+
+        return 0;
+    }
+
 }
