@@ -1,5 +1,11 @@
 package coding.tixi.day08;
 
+import coding.tixi.ArrayUtils;
+
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.PriorityQueue;
+
 /**
  * 1. 提供几个线段（给出开始和结尾位置），计算出这些线段有重合在一起的最大线段数【可以用系统提供的排序和数据结构】
  * 2.手动改写堆
@@ -17,12 +23,66 @@ package coding.tixi.day08;
 public class HeapStrong {
 
     public static void main(String[] args) {
-
+        HeapStrong heapStrong = new HeapStrong();
+//        int[][] line = new int[4][];
+//        line[0] = new int[]{1,5};
+//        line[1] = new int[]{2,6};
+//        line[2] = new int[]{3,5};
+//        line[3] = new int[]{6,7};
+//        System.out.println(heapStrong.maxCover1(line));
+        heapStrong.testHeapStrong();
     }
 
     public int maxCover1(int[][] lines) {
+        int min = lines[0][0];
+        int max = lines[0][1];
+        for (int i = 1; i < lines.length; i++) {
+            min = Math.min(lines[i][0], min);
+            max = Math.max(lines[i][1], max);
+        }
+        int maxCover = 0;
+        for(double v = min + 0.5; v < max; v++) {
+            int cover = 0;
+            for (int i = 0; i < lines.length; i++) {
+                if (lines[i][0] < v && lines[i][1] > v) {
+                    cover++;
+                }
+            }
+            maxCover = Math.max(maxCover, cover);
+        }
+        return maxCover;
+    }
+    public int maxCover2(int[][] lines) {
 
         return 0;
+    }
+
+    public void testHeapStrong() {
+        for (int time = 0; time < 200_0000; time++) {
+            HeapGreater<Integer> heapGreater = new HeapGreater<>(Integer::compareTo);
+            PriorityQueue<Integer> heap = new PriorityQueue<>(Comparator.reverseOrder());
+            int[] arr = ArrayUtils.generalArr(50);
+            for (int i = 0; i < arr.length; i++) {
+                double v = Math.random();
+                if (v < 0.5) {
+                    heapGreater.add(arr[i]);
+                    heap.add(arr[i]);
+                } else if (v < 0.75) {
+                    if (heapGreater.heapSize > 0) {
+                        if (!Objects.equals(heapGreater.peek(), heap.peek())) {
+                            System.out.println("出错");
+                        }
+                    }
+                } else {
+                    if (heapGreater.heapSize > 0) {
+                        if (!Objects.equals(heapGreater.pop(), heap.poll())) {
+                            System.out.println("出错");
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("成功");
     }
 
 }

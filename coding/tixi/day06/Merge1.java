@@ -18,12 +18,96 @@ public class Merge1 {
 
     public static void main(String[] args) {
         Merge1 merge1 = new Merge1();
-        merge1.testQuickSort();
+//        merge1.testQuickSort();
+        merge1.testCountRange();
     }
 
     public int countRangeSum(int[] nums, int lower, int upper) {
-        return 0;
+        if (Objects.isNull(nums) || nums.length <=0) {
+            return 0;
+        }
+        // 前缀和
+        long[] sum = new long[nums.length];
+        long curSum = 0;
+        for (int i = 0; i < nums.length; i++) {
+            sum[i] = curSum +nums[i];
+            curSum = sum[i];
+        }
+        return processRangeSum(sum, 0, sum.length-1, lower, upper);
     }
+    public int processRangeSum(long[] sums, int start, int end, int lower, int upper) {
+        if (start == end) {
+            return sums[start] <= upper && sums[start] >= lower? 1 : 0;
+        }
+        int middle = start + ((end - start) >> 1);
+        // 递归+归并
+        return processRangeSum(sums, start, middle, lower, upper)
+                + processRangeSum(sums, middle+1, end, lower, upper)
+                + mergeRangeSum(sums, start, middle, end, lower, upper);
+    }
+    public int mergeRangeSum(long[] sums, int start, int middle, int end, int lower, int upper) {
+        int windowL = start;
+        int result = 0;
+        for (int i = middle+1; i <= end; i++) {
+            long max = sums[i] - lower;
+            long min = sums[i] - upper;
+            while (windowL <= middle && sums[windowL] < min) {
+                windowL++;
+            }
+            int windowR = windowL;
+            while (windowR <= middle && sums[windowR] <= max ) {
+                windowR ++;
+            }
+            result = result + (windowR - windowL);
+        }
+        // 归并排序
+        long[] help = new long[end-start+1];
+        int L = start;
+        int R = middle+1;
+        int i = 0;
+        while (L <= middle && R <= end) {
+            if (sums[L] <= sums[R]) {
+                help[i++] = sums[L++];
+            } else {
+                help[i++] = sums[R++];
+            }
+        }
+        while (L <= middle) {
+            help[i++] = sums[L++];
+        }
+        while (R <= end) {
+            help[i++] = sums[R++];
+        }
+        for (int j = 0; j < i; j++) {
+            sums[start+j] = help[j];
+        }
+        return result;
+    }
+    public void testCountRange() {
+        int[] arr = {-2147483647,0,-2147483647,2147483647};
+        int i = countRangeSum(arr, -564, 3864);
+        System.out.println(i);
+    }
+
+    public int countRangeSumBL(int[] nums, int lower, int upper) {
+        if (Objects.isNull(nums) || nums.length <= 0) {
+            return 0;
+        }
+        int result = 0;
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = i; j < nums.length; j++) {
+                long sum = 0;
+                for (int k = i; k <= j; k++) {
+                    sum+=nums[k];
+                }
+                if (sum >= lower && sum <= upper) {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
+
 
     public void quickSort1(int[] arr) {
         if (Objects.isNull(arr) || arr.length <= 1) {
