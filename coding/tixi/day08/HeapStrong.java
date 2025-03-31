@@ -2,9 +2,7 @@ package coding.tixi.day08;
 
 import coding.tixi.ArrayUtils;
 
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * 1. 提供几个线段（给出开始和结尾位置），计算出这些线段有重合在一起的最大线段数【可以用系统提供的排序和数据结构】
@@ -30,7 +28,8 @@ public class HeapStrong {
 //        line[2] = new int[]{3,5};
 //        line[3] = new int[]{6,7};
 //        System.out.println(heapStrong.maxCover1(line));
-        heapStrong.testHeapStrong();
+//        heapStrong.testHeapStrong();
+        heapStrong.testMaxCover();
     }
 
     public int maxCover1(int[][] lines) {
@@ -53,8 +52,38 @@ public class HeapStrong {
         return maxCover;
     }
     public int maxCover2(int[][] lines) {
-
-        return 0;
+        List<Line> list = new ArrayList<>(lines.length);
+        for (int i = 0; i < lines.length; i++) {
+            list.add(new Line(lines[i][0], lines[i][1]));
+        }
+        // 排序，按开始位置从小到大排序
+        list.sort(Comparator.comparingInt(o -> o.from));
+        PriorityQueue<Integer> heap = new PriorityQueue<>();
+        int max = 0;
+        for (Line line : list) {
+            heap.add(line.to);
+            while (!heap.isEmpty() && heap.peek() <= line.from) {
+                heap.poll();
+            }
+            max = Math.max(max, heap.size());
+        }
+        return max;
+    }
+    public void testMaxCover() {
+        for (int time = 0; time < 200_0000; time++) {
+            int times = (int) (Math.random() * 20) + 5;
+            int[][] arr = new int[times][2];
+            for (int i = 0; i < times; i++) {
+                arr[i][0] = (int) (Math.random() * 10);
+                arr[i][1] = arr[i][0] + (int) (Math.random() * 10);
+            }
+            int size1 = maxCover1(arr);
+            int size2 = maxCover2(arr);
+            if (size1 != size2) {
+                System.out.println("出错了");
+            }
+        }
+        System.out.println("成功");
     }
 
     public void testHeapStrong() {
