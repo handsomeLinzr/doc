@@ -1,5 +1,9 @@
 package coding.tixi.day10;
 
+import coding.tixi.ListNode;
+
+import java.util.Objects;
+
 /**
  * 1.获取链表中点（快慢指针）
  *     奇数返回中点，偶数返回上中电
@@ -23,7 +27,37 @@ package coding.tixi.day10;
 public class Linked {
 
     public static void main(String[] args) {
+        Linked linked = new Linked();
+        ListNode node = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5, new ListNode(6, null))))));
+        ListNode upMiddleNode = linked.getUpMiddleNode(node);
+        ListNode downMiddleNode = linked.getDownMiddleNode(node);
+        System.out.println(upMiddleNode);
+    }
 
+    public ListNode getUpMiddleNode(ListNode node) {
+        if (Objects.isNull(node)) {
+            return null;
+        }
+        ListNode fast = node;
+        ListNode slow = node;
+        while (Objects.nonNull(fast.next) && Objects.nonNull(fast.next.next)) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+
+    public ListNode getDownMiddleNode(ListNode node) {
+        if (Objects.isNull(node)) {
+            return null;
+        }
+        ListNode fast = node;
+        ListNode slow = node;
+        while (Objects.nonNull(fast) && Objects.nonNull(fast.next)) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
     }
 
 }
