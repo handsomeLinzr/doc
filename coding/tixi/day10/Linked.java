@@ -31,6 +31,8 @@ public class Linked {
         ListNode node = new ListNode(1, new ListNode(2, new ListNode(3, new ListNode(4, new ListNode(5, new ListNode(6, null))))));
         ListNode upMiddleNode = linked.getUpMiddleNode(node);
         ListNode downMiddleNode = linked.getDownMiddleNode(node);
+        ListNode upUpMiddleNode = linked.getUpUpMiddleNode(node);
+        ListNode downDownMiddleNode = linked.getDownDownMiddleNode(node);
         System.out.println(upMiddleNode);
     }
 
@@ -52,6 +54,31 @@ public class Linked {
             return null;
         }
         ListNode fast = node;
+        ListNode slow = node;
+        while (Objects.nonNull(fast) && Objects.nonNull(fast.next)) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+
+    public ListNode getUpUpMiddleNode(ListNode node) {
+        if (Objects.isNull(node) || Objects.isNull(node.next) || Objects.isNull(node.next.next)) {
+            return node;
+        }
+        ListNode fast = node.next.next;
+        ListNode slow = node;
+        while (Objects.nonNull(fast.next) && Objects.nonNull(fast.next.next)) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+    public ListNode getDownDownMiddleNode(ListNode node) {
+        if (Objects.isNull(node) || Objects.isNull(node.next) || Objects.isNull(node.next.next)) {
+            return node;
+        }
+        ListNode fast = node.next.next;
         ListNode slow = node;
         while (Objects.nonNull(fast) && Objects.nonNull(fast.next)) {
             slow = slow.next;
