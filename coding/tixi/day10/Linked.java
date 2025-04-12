@@ -254,59 +254,61 @@ public class Linked {
             pre = preNext;
         }
     }
+
+    // 如   6->3->7->6->7->4, 6    ==>>   3->4->6->7->7
     public ListNode partitionListNode(ListNode node, int value) {
-        if (Objects.isNull(node) || Objects.isNull(node.next)) {
-            return node;
+        if (Objects.isNull(node)) {
+            return null;
         }
-        ListNode ltH = null;
-        ListNode ltT = null;
-        ListNode eqH = null;
-        ListNode eqT = null;
-        ListNode gtH = null;
-        ListNode gtT = null;
+        // 定义三个节点
+        ListNode ltHead = null;
+        ListNode eqHead = null;
+        ListNode gtHead = null;
+        ListNode ltTail = null;
+        ListNode eqTail = null;
+        ListNode gtTail = null;
         while (Objects.nonNull(node)) {
             if (node.value < value) {
-                if (Objects.isNull(ltH)) {
-                    ltH = ltT = node;
+                if (Objects.isNull(ltHead)) {
+                    ltHead = ltTail = node;
                 } else {
-                    ltT.next = node;
+                    ltTail.next = node;
+                    ltTail = node;
                 }
-                ltT = node;
             } else if (node.value == value) {
-                if (Objects.isNull(eqH)) {
-                    eqH = eqT = node;
+                if (Objects.isNull(eqHead)) {
+                    eqHead = eqTail = node;
                 } else {
-                    eqT.next = node;
+                    eqTail.next = node;
+                    eqTail = node;
                 }
-                eqT = node;
             } else {
-                if (Objects.isNull(gtH)) {
-                    gtH = gtT = node;
+                if (Objects.isNull(gtHead)) {
+                    gtHead = gtTail = node;
                 } else {
-                    gtT.next = node;
+                    gtTail.next = node;
+                    gtTail = node;
                 }
-                gtT = node;
             }
             node = node.next;
         }
-        ltT.next = null;
-        eqT.next = null;
-        gtT.next = null;
-        ListNode head;
-        if (Objects.nonNull(ltH)) {
-            head = ltH;
-            if (Objects.nonNull(eqH)) {
-                ltT.next = eqH;
-                ltT = eqT;
-            }
-            ltT.next = gtH;
-        } else {
-            head = Objects.nonNull(eqH)? eqH : gtH;
-            if (Objects.nonNull(eqH)) {
-                eqT.next = gtH;
-            }
+        if (Objects.nonNull(ltTail)) {
+            ltTail.next = null;
         }
-        return head;
+        if (Objects.nonNull(eqTail)) {
+            eqTail.next = null;
+        }
+        if (Objects.nonNull(gtTail)) {
+            gtTail.next = null;
+        }
+
+        if (Objects.nonNull(ltHead)) {
+            ltTail.next = Objects.nonNull(eqHead)? eqHead:gtHead;
+        }
+        if (Objects.nonNull(eqHead)) {
+            eqTail.next = gtHead;
+        }
+        return Objects.nonNull(ltHead)? ltHead : Objects.nonNull(eqHead)?eqHead:gtHead;
     }
 
     public ListNodeDay10 clone1(ListNodeDay10 node) {
