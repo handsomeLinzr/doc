@@ -8,8 +8,11 @@ public class ListNodeDay10 {
 
     public ListNodeDay10 next;
     public ListNodeDay10 rand;
+    public int val;
 
-    public ListNodeDay10() {}
+    public ListNodeDay10(int val) {
+        this.val = val;
+    }
     public ListNodeDay10(ListNodeDay10 next, ListNodeDay10 rand) {
         this.next = next;
         this.rand = rand;
