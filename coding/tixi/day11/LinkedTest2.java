@@ -1,5 +1,7 @@
 package coding.tixi.day11;
 
+import coding.tixi.ListNode;
+
 /**
  * 1.给定一个链表，可能有环也可能没环，返回第一个入环节点（有的情况）或者null（没环的情况）  getLoopNode
  *      1. 利用容器 hashSet，当放不进的时候说明有环且是第一个入环节点
@@ -24,4 +26,9 @@ package coding.tixi.day11;
  * @date 2025/3/30 15:36
  */
 public class LinkedTest2 {
+
+    public ListNode getLoopNode(ListNode node) {
+        return null;
+    }
+
 }
