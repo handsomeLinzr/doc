@@ -9,6 +9,7 @@ public class BinaryTreeNode {
     public Integer value;
     public BinaryTreeNode left;
     public BinaryTreeNode right;
+    public BinaryTreeNode parent;
 
     public BinaryTreeNode() {}
     public BinaryTreeNode(Integer value) {
