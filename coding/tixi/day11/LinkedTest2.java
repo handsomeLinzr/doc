@@ -47,6 +47,31 @@ public class LinkedTest2 {
         ListNode node12 = new ListNode(1, n1);
         ListNode x = test.getX(node12, node11);
         System.out.println(x == null? "null" : x.value);
+        System.out.println("==================================");
+
+
+        ListNode nn1 = new ListNode(11, null);
+        ListNode nn2 = new ListNode(12, nn1);
+        ListNode nn3 = new ListNode(13, nn2);
+        ListNode nn4 = new ListNode(14, nn3);
+        ListNode nn5 = new ListNode(15, nn4);
+        ListNode nn6 = new ListNode(16, nn5);
+        nn1.next = nn4;
+
+        ListNode nn11 = new ListNode(11, null);
+        ListNode nn21 = new ListNode(12, nn11);
+        ListNode nn31 = new ListNode(13, nn21);
+        ListNode nn41 = new ListNode(14, nn31);
+        ListNode nn51 = new ListNode(15, nn41);
+        ListNode nn61 = new ListNode(16, nn51);
+        nn11.next = nn41;
+
+
+
+        ListNode rn1 = new ListNode(111, new ListNode(222, new ListNode(333, nn3)));
+        ListNode rn2 = new ListNode(555, new ListNode(666, nn31));
+        ListNode x1 = test.getX(rn1, rn2);
+        System.out.println(x1 == null? "null" : x1.value);
 
     }
 
@@ -89,7 +114,7 @@ public class LinkedTest2 {
         if (loopNode1 == null) {
             return noLoop(node1, node2);
         } else {
-            return bothLoop(node1, node2);
+            return bothLoop(node1, loopNode1, node2, loopNode2);
         }
     }
     // 没有环
@@ -128,9 +153,39 @@ public class LinkedTest2 {
         return curNode1;
     }
     // 有环
-    private ListNode bothLoop(ListNode node1, ListNode node2) {
-
-        return null;
+    private ListNode bothLoop(ListNode node1, ListNode loopNode1, ListNode node2, ListNode loopNode2) {
+        if (loopNode1 == loopNode2) {
+            // 同一个环点，说明相交，且相交点在环点或者环点之前
+            int n = 1;
+            ListNode cur1 = node1;
+            while (cur1 != loopNode1) {
+                cur1 = cur1.next;
+                n++;
+            }
+            ListNode cur2 = node2;
+            n--;
+            while (cur2 != loopNode2) {
+                cur2 = cur2.next;
+                n--;
+            }
+            cur1 = n > 0? node1 : node2;
+            cur2 = cur1 == node1? node2 : node1;
+            while (n > 0) {
+                cur1 = cur1.next;
+                n--;
+            }
+            while (cur1 != cur2) {
+                cur1 = cur1.next;
+                cur2 = cur2.next;
+            }
+            return cur1;
+        } else {
+            ListNode curNode = loopNode1.next;
+            while (curNode != loopNode2 && curNode != loopNode1) {
+                curNode = curNode.next;
+            }
+            return curNode == loopNode2? loopNode2 : null;
+        }
     }
 
 

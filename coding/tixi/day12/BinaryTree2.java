@@ -73,6 +73,8 @@ public class BinaryTree2 {
         System.out.println(tree2.getLevelMaxNodes(head));
         BinaryTreeNode successorNode = tree2.getSuccessorNode(headL);
         System.out.println(successorNode == null? "null" : successorNode.value);
+        System.out.println("================");
+        tree2.printAllFolds(3);
     }
 
     /**
@@ -280,6 +282,11 @@ public class BinaryTree2 {
             node = parent;
         }
         return parent;
+    }
+
+    // 折纸条
+    public void printAllFolds(int n) {
+
     }
 
     // 多叉树和二叉树的格式化转换
