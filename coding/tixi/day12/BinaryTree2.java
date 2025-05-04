@@ -1,12 +1,8 @@
 package coding.tixi.day12;
 
 import coding.tixi.BinaryTreeNode;
-import coding.tixi.ListNode;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * 1. 二叉树宽度按层遍历
@@ -75,6 +71,41 @@ public class BinaryTree2 {
         System.out.println(successorNode == null? "null" : successorNode.value);
         System.out.println("================");
         tree2.printAllFolds(3);
+        System.out.println("================");
+
+        BinaryTreeNode node2 = new BinaryTreeNode(2);
+        BinaryTreeNode node3 = new BinaryTreeNode(3);
+        BinaryTreeNode node4 = new BinaryTreeNode(4);
+        BinaryTreeNode node5 = new BinaryTreeNode(5);
+        BinaryTreeNode node6 = new BinaryTreeNode(6);
+        BinaryTreeNode node7 = new BinaryTreeNode(7);
+        BinaryTreeNode node1 = new BinaryTreeNode(1);
+
+        BinaryTreeNode node12 = new BinaryTreeNode(12);
+        BinaryTreeNode node13 = new BinaryTreeNode(13);
+        BinaryTreeNode node14 = new BinaryTreeNode(14);
+        BinaryTreeNode node15 = new BinaryTreeNode(15);
+        BinaryTreeNode node16 = new BinaryTreeNode(16);
+        BinaryTreeNode node17 = new BinaryTreeNode(17);
+        BinaryTreeNode node11 = new BinaryTreeNode(11);
+        BinaryTreeNode node18 = new BinaryTreeNode(18);
+
+
+        node1.left = node2;
+        node1.right = node5;
+        node2.left = node3;
+        node2.right = node11;
+        node3.left = node4;
+        node3.right = node13;
+        node11.left = node14;
+        node11.right = node15;
+        node12.left = node16;
+        node12.right = node17;
+        node6.left = node18;
+        node5.left = node12;
+        node5.right = node6;
+        node6.right = node7;
+        tree2.printBinaryTree(node1);
     }
 
     /**
@@ -286,20 +317,83 @@ public class BinaryTree2 {
 
     // 折纸条
     public void printAllFolds(int n) {
-
+        foldsProcess(1, n, "凹");
+        System.out.println();
     }
+    private void foldsProcess(int n, int maxN, String print) {
+        if (n == maxN) {
+            System.out.print(print);
+            return;
+        }
+        foldsProcess(n+1, maxN, "凹");
+        System.out.print(print);
+        foldsProcess(n+1, maxN, "凸");
 
-    // 多叉树和二叉树的格式化转换
-    public BinaryTreeNode encode(MulTree tree) {
-        return null;
-    }
-    public MulTree decode(BinaryTreeNode treeNode) {
-        return null;
     }
 
     // 打印二叉树
     public void printBinaryTree(BinaryTreeNode node) {
+        int height = getHeight(node);
+        LinkedList<InnerNode> list = new LinkedList<>();
+        list.add(new InnerNode(node, false));
+        printTreeNode(list, 1, height);
 
+    }
+    private int getHeight(BinaryTreeNode node) {
+        if (node == null) {
+            return 0;
+        } else {
+            return Math.max(getHeight(node.left), getHeight(node.right)) + 1;
+        }
+    }
+    private void printTreeNode(LinkedList<InnerNode> list, int h, int maxH) {
+        if (h > maxH) {
+            return;
+        }
+        int space = getSpace(h, maxH);
+        LinkedList<InnerNode> list1 = new LinkedList<>();
+        while (!list.isEmpty()) {
+            InnerNode poll = list.poll();
+            if (poll.node != null) {
+                list1.add(new InnerNode(poll.node.left, false));
+                list1.add(new InnerNode(poll.node.right, true));
+                printWithSpace(space, String.valueOf(poll.node.value), poll.isRight);
+            } else {
+                list1.add(new InnerNode(null, false));
+                list1.add(new InnerNode(null, true));
+                printWithSpace(space, " ", poll.isRight);
+            }
+        }
+        System.out.println();
+        printTreeNode(list1, h+1, maxH);
+    }
+    private int getSpace(int h, int maxH) {
+        int sum = 1;
+        for (int i = 0; i < maxH - h; i++) {
+            sum *= 2;
+        }
+        return sum;
+    }
+    private void printWithSpace(int space, String value, boolean isRight) {
+        for (int i = 1; i < space; i++) {
+            System.out.print("  ");
+        }
+        System.out.print(value);
+        for (int i = 1; i < space; i++) {
+            System.out.print("  ");
+        }
+        if (space == 1 && !isRight) {
+            System.out.print("  ");
+        }
+    }
+
+    class InnerNode {
+        public BinaryTreeNode node;
+        public boolean isRight;
+        public InnerNode(BinaryTreeNode node, boolean isRight) {
+            this.node = node;
+            this.isRight = isRight;
+        }
     }
 
 }

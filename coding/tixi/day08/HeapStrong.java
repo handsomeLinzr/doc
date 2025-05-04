@@ -28,8 +28,8 @@ public class HeapStrong {
 //        line[2] = new int[]{3,5};
 //        line[3] = new int[]{6,7};
 //        System.out.println(heapStrong.maxCover1(line));
-//        heapStrong.testHeapStrong();
-        heapStrong.testMaxCover();
+        heapStrong.testHeapStrong();
+//        heapStrong.testMaxCover();
     }
 
     public int maxCover1(int[][] lines) {

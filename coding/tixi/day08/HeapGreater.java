@@ -12,14 +12,15 @@ import java.util.*;
  */
 public class HeapGreater<T> {
 
-    ArrayList<T> heap;
-    Map<T, Integer> indexMap;
-    int heapSize = 0;
-    Comparator<T> comparator;
-    public HeapGreater(Comparator<T> comparator) {
-        this.heap = new ArrayList<>();
-        this.indexMap = new HashMap<>();
+    public Comparator<T> comparator;
+    public int heapSize;
+    public List<T> heap;
+    public Map<T, Integer> heapIndex;
+
+    public HeapGreater (Comparator<T> comparator) {
         this.comparator = comparator;
+        this.heap = new ArrayList<>();
+        this.heapIndex = new HashMap<>();
     }
 
     // O(1)
@@ -30,62 +31,85 @@ public class HeapGreater<T> {
     // O(logN)
     public T pop() {
         if (heapSize == 0) {
-            throw new RuntimeException("空了");
+            return null;
         }
-        T result = heap.get(0);
         swap(0, heapSize-1);
-        heap.remove(--heapSize);
-        indexMap.remove(result);
-        heapify(0);
-        return result;
+        heapify(0, heapSize-1);
+        T remove = heap.remove(--heapSize);
+        heapIndex.remove(remove);
+        return remove;
     }
 
     // O(logN)
     public void add(T value) {
-        heap.add(heapSize, value);
-        indexMap.put(value, heapSize);
-        heapInsert(heapSize++);
+        heap.add(value);
+        heapIndex.put(value, heapSize);
+        heapInsert(heapSize);
+        heapSize++;
+    }
+
+    public boolean contain(T value) {
+        return heapIndex.containsKey(value);
     }
 
     // O(logN)
     public void remove(T value) {
-        if (!indexMap.containsKey(value)) {
+        if (!heapIndex.containsKey(value)) {
             return;
         }
-        Integer index = indexMap.get(value);
-        T replace = heap.get(heapSize - 1);
-        indexMap.remove(value);
-        heap.remove(--heapSize);
-        if (value != replace) {
-            heap.set(index, replace);
-            indexMap.put(replace, index);
-            resign(index);
+        Integer index = heapIndex.get(value);
+        T last = heap.remove(--heapSize);
+        heapIndex.remove(value);
+        if (index == heapSize) {
+            return;
         }
+        heap.set(index, last);
+        heapIndex.put(last, index);
+        resign(last);
     }
 
-    public void resign(int index) {
+    public void resign(T value) {
         if (heapSize > 1) {
+            Integer index = heapIndex.get(value);
             heapInsert(index);
-            heapify(index);
+            heapify(index, heapSize);
         }
     }
 
+    /**
+     * 上浮
+     * @param index
+     */
     public void heapInsert(int index) {
-        while (comparator.compare(heap.get(index), heap.get((index-1)/2)) > 0) {
-            swap(index, (index-1)/2);
-            index = (index-1)/2;
-        }
-    }
-    public void heapify(int index) {
-        int compIndex;
-        while ((compIndex = index*2+1) < heapSize) {
-            compIndex = compIndex+1 < heapSize && comparator.compare(heap.get(compIndex+1), heap.get(compIndex)) > 0? compIndex+1:compIndex;
-            if (comparator.compare(heap.get(compIndex), heap.get(index)) > 0) {
-                swap(compIndex, index);
+        int parent = (index - 1) / 2;
+        while (parent >= 0) {
+            if (comparator.compare(heap.get(parent), heap.get(index)) > 0) {
+                swap(parent, index);
             } else {
                 break;
             }
-            index = compIndex;
+            index = parent;
+            parent = (index - 1) / 2;
+        }
+    }
+
+    /**
+     * 下沉
+     * @param index
+     * @param size
+     */
+    public void heapify(int index, int size) {
+        int child = index*2+1;
+        while (child < size) {
+            // 获取子节点更小的一个
+            child = child + 1 < size && comparator.compare(heap.get(child+1), heap.get(child)) > 0? child+1 : child;
+            if (comparator.compare(heap.get(index), heap.get(child)) > 0) {
+                swap(index, child);
+            } else {
+                break;
+            }
+            index = child;
+            child = index*2+1;
         }
     }
     public void swap(int a, int b) {
@@ -96,8 +120,8 @@ public class HeapGreater<T> {
         T t2 = heap.get(b);
         heap.set(a, t2);
         heap.set(b, t1);
-        indexMap.put(t1, b);
-        indexMap.put(t2, a);
+        heapIndex.put(t2, a);
+        heapIndex.put(t1, b);
     }
 
     public static void main(String[] args) {
