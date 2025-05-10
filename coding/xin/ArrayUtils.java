@@ -15,6 +15,15 @@ public class ArrayUtils {
         return arr;
     }
 
+    public static int[] generalArrayPositive(int length, int max) {
+        length = (int) (Math.random() * length) + 1;
+        int[] arr = new int[length];
+        for (int i = 0; i < length; i++) {
+            arr[i] = (int) (Math.random() * max) + 1;
+        }
+        return arr;
+    }
+
     /**
      * 相邻不相等
      * @param length
