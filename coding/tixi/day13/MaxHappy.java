@@ -18,10 +18,9 @@ public class MaxHappy {
             nexts = new ArrayList<>();
         }
     }
-
     public static int maxHappy(Employee boss) {
-        Info process = process(boss, false);
-        return Math.max(process.yes, process.no);
+        Info info = process(boss);
+        return Math.max(info.yes, info.no);
     }
     // yes —— 去的情况
     // no  —— 不去的情况
@@ -33,7 +32,25 @@ public class MaxHappy {
             this.no = no;
         }
     }
-    public static Info process(Employee employee, boolean up) {
+    public static Info process(Employee employee) {
+        if (employee == null) {
+            return new Info(0, 0);
+        }
+        int yes = employee.happy;
+        int no = 0;
+        for (Employee next : employee.nexts) {
+            Info info = process(next);
+            yes += info.no;
+            no += Math.max(info.yes, info.no);
+        }
+        return new Info(yes, no);
+    }
+
+    public static int maxHappy3(Employee boss) {
+        Info process = process3(boss, false);
+        return Math.max(process.yes, process.no);
+    }
+    public static Info process3(Employee employee, boolean up) {
         if (employee == null) {
             return new Info(0, 0);
         }
@@ -42,11 +59,11 @@ public class MaxHappy {
         for (Employee next : employee.nexts) {
             if (up) {
                 // 上级去，自己不去
-                Info process = process(next, false);
+                Info process = process3(next, false);
                 no += Math.max(process.yes, process.no);
             } else {
-                Info pTrue = process(next, true);
-                Info pFalse = process(next, false);
+                Info pTrue = process3(next, true);
+                Info pFalse = process3(next, false);
                 yes += Math.max(pTrue.yes, pTrue.no);
                 no += Math.max(pFalse.yes, pFalse.no);
             }
@@ -104,7 +121,13 @@ public class MaxHappy {
     public static void main(String[] args) {
         for (int i = 0; i < 100_000; i++) {
             Employee boss = generalBoss(5, 5, 20);
-            if (maxHappy(boss) != maxHappy1(boss)) {
+            int ans1 = maxHappy1(boss);
+            int ans3 = maxHappy3(boss);
+            int ans5 = maxHappy(boss);
+            if (ans1 != ans3) {
+                System.out.println("Oops");
+            }
+            if (ans1 != ans5) {
                 System.out.println("Oops");
             }
         }
