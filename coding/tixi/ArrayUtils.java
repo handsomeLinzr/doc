@@ -10,7 +10,7 @@ public class ArrayUtils {
         int time = (int) (Math.random() * maxTime) + 1;
         int[] arr = new int[time];
         for (int i = 0; i < time; i++) {
-            arr[i] = (int) (Math.random() * 100) - (int) (Math.random() * 100);
+            arr[i] = (int) (Math.random() * 100);
         }
         return arr;
     }
@@ -19,7 +19,7 @@ public class ArrayUtils {
         int time = (int) (Math.random() * maxTime) + minTime;
         int[] arr = new int[time];
         for (int i = 0; i < time; i++) {
-            arr[i] = (int) (Math.random() * 100) - (int) (Math.random() * 100);
+            arr[i] = (int) (Math.random() * 100) ;
         }
         return arr;
     }
