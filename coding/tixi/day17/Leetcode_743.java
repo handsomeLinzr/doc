@@ -159,11 +159,48 @@ public class Leetcode_743 {
         return nodes.size() == n? min : -1;
     }
 
+    public int networkDelayTime1(int[][] times, int n, int k) {
+        if (times == null || times.length == 0) {
+            return 0;
+        }
+        PriorityQueue<int[]> heap = new PriorityQueue<>(Comparator.comparingInt(o -> o[1]));
+        heap.add(new int[]{k, 0});
+
+        ArrayList<ArrayList<int[]>> list = new ArrayList<>(n+1);
+        for (int i = 0; i < n + 1; i++) {
+            list.add(new ArrayList<>());
+        }
+        for (int[] time : times) {
+            list.get(time[0]).add(new int[]{time[1], time[2]});
+        }
+
+        boolean[] select = new boolean[n+1];
+        int max = 0;
+        int num = 0;
+        while (!heap.isEmpty()) {
+            int[] poll = heap.poll();
+            int to = poll[0];
+            int length = poll[1];
+            if (select[to]) {
+                continue;
+            }
+            num++;
+            select[to] = true;
+            max = Math.max(max, length);
+            for (int[] ints : list.get(to)) {
+                heap.add(new int[]{ints[0], length + ints[1]});
+            }
+        }
+        return num == n? max : -1;
+    }
+
     public static void main(String[] args) {
         Leetcode_743 instance = new Leetcode_743();
         int[][] arr = {{2,1,1},{2,3,1},{3,4,1}};
-        int i = instance.networkDelayTime(arr, 4, 2);
-        System.out.println(i);
+        int i1 = instance.networkDelayTime(arr, 4, 2);
+        int i2 = instance.networkDelayTime1(arr, 4, 2);
+        System.out.println(i1);
+        System.out.println(i2);
     }
 
 }
