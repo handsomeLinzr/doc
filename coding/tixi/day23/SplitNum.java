@@ -1,7 +1,5 @@
 package coding.tixi.day23;
 
-import java.util.ArrayList;
-
 /**
  *
  * 给定一个数字，要求将这个数进行裂开成多个正数
