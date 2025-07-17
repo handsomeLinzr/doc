@@ -123,6 +123,81 @@ public class StoneMerge {
         return dp[0][N-1];
     }
 
+    // 测试练习
+    public static int min4(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return 0;
+        }
+        return process4(arr, 0, arr.length-1, sum(arr));
+    }
+    public static int process4(int[] arr, int left, int right, int[] sum) {
+        if (left == right) {
+            return 0;
+        }
+        if (left == right-1) {
+            return arr[left] + arr[right];
+        }
+        int min = Integer.MAX_VALUE;
+        for (int i = left; i < right; i++) {
+            min = Math.min(min, process4(arr, left, i, sum) + process4(arr, i+1, right, sum));
+        }
+        return min + (sum[right+1]-sum[left]);
+    }
+    public static int minDp4(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return 0;
+        }
+        int N = arr.length;
+        int[] sum = sum(arr);
+        int[][] dp = new int[N][N];
+        for (int i = 0; i < N - 1; i++) {
+            dp[i][i+1] = arr[i] + arr[i+1];
+        }
+        for (int i = N-3; i>= 0; i--) {
+            // j==i,j==i+1 都已经算了
+            for (int j = i+2; j < N ; j++) {
+                int min = Integer.MAX_VALUE;
+                for (int k = i; k < j; k++) {
+                    min = Math.min(min, dp[i][k] + dp[k+1][j]);
+                }
+                dp[i][j] = min + sum[j+1]-sum[i];
+            }
+        }
+        return dp[0][N-1];
+    }
+
+    public static int minDpBase4(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return 0;
+        }
+        int N = arr.length;
+        int[] sum = sum(arr);
+        int[][] dp = new int[N][N];
+        int[][] baseIndex = new int[N][N];
+        for (int i = 0; i < N - 1; i++) {
+            dp[i][i+1] = arr[i] + arr[i+1];
+            baseIndex[i][i+1] = i;
+        }
+        for (int i = N-3; i>= 0; i--) {
+            // j==i,j==i+1 都已经算了
+            for (int j = i+2; j < N ; j++) {
+                int leftIndex = baseIndex[i][j-1];
+                int maxIndex = baseIndex[i+1][j];
+                int base = -1;
+                int min = Integer.MAX_VALUE;
+                for (int k = leftIndex; k <= maxIndex; k++) {
+                    if (min > dp[i][k] + dp[k+1][j]) {
+                        min = dp[i][k] + dp[k+1][j];
+                        base = k;
+                    }
+                }
+                dp[i][j] = min + sum[j+1]-sum[i];
+                baseIndex[i][j] = base;
+            }
+        }
+        return dp[0][N-1];
+    }
+
 
     public static int[] generalArr(int len, int maxValue) {
         int length;
@@ -146,7 +221,10 @@ public class StoneMerge {
             int ans1 = min1(arr);
             int ans2 = min2(arr);
             int ans3 = min3(arr);
-            if (ans != ans1 || ans != ans2 || ans != ans3) {
+            int ans4 = min4(arr);
+            int ans5 = minDp4(arr);
+            int ans6 = minDpBase4(arr);
+            if (ans != ans1 || ans != ans2 || ans != ans3 || ans != ans4 || ans != ans5 || ans != ans6) {
                 System.out.println("Oops");
             }
         }
