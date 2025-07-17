@@ -150,19 +150,19 @@ public class Table_AVLTreeMap {
                     cur = cur.l;
                 }
             }
-            return null;
+            return ans;
         }
         // 添加
         public AVLNode<K, V> add(AVLNode<K, V> cur, K key, V value) {
-            if (root == null) {
+            if (cur == null) {
                 return new AVLNode<>(key, value);
             }
             if (key.compareTo(cur.key) > 0) {
                 // 右边
-                add(cur.r, key, value);
+                cur.r = add(cur.r, key, value);
             } else if (key.compareTo(cur.key) < 0) {
                 // 左边
-                add(cur.l, key, value);
+                cur.l = add(cur.l, key, value);
             } else {
                 // 改值
                 cur.v = value;
@@ -174,7 +174,7 @@ public class Table_AVLTreeMap {
             return maintain(cur);
         }
         public AVLNode<K, V> delete(AVLNode<K, V> cur, K key) {
-            if (key == null || root == null) {
+            if (key == null || cur == null) {
                 return null;
             }
             int compare = key.compareTo(cur.key);
@@ -227,11 +227,11 @@ public class Table_AVLTreeMap {
                 return;
             }
             AVLNode<K, V> node = findLastIndex(key);
-            if (node.key.compareTo(key) == 0) {
+            if (node != null && node.key.compareTo(key) == 0) {
                 node.v = value;
             } else {
                 size++;
-                add(node, key, value);
+                root = add(root, key, value);
             }
         }
         public void remove(K key) {

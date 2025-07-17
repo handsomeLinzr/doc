@@ -38,9 +38,9 @@ public class Table_SkipListMap {
 
     public static class SkipListMap<K extends Comparable<K>, V> {
         public static final double PROBABILITY = 0.5; //  < 0.5 继续做， >= 0.5 停
-        private SkipListNode<K, V> head;  // 跳表头节点，初始化为null
+        public SkipListNode<K, V> head;  // 跳表头节点，初始化为null
         private int size;
-        private int maxLevel;
+        public int maxLevel;
         public SkipListMap() {
             head = new SkipListNode<>(null, null);
             head.nextNodes.add(null);  // 0
