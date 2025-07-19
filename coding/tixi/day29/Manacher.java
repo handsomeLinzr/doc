@@ -33,7 +33,7 @@ public class Manacher {
             }
             max = Math.max(max, pre[i]);
         }
-        return max - 1;
+        return max - 1;  // 注意要减1
     }
 
     public static int right(String str) {
