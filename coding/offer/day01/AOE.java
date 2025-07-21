@@ -70,8 +70,8 @@ public class AOE {
     public static int[] cover(int[] x, int range) {
         int n = x.length;
         int[] cover = new int[n];
+        int r = 1;
         for (int i = 0; i < n; i++) {
-            int r = 1;
             while (r < n && x[r] - x[i] <= range) {
                 r++;
             }
@@ -167,6 +167,111 @@ public class AOE {
         return ans;
     }
 
+    // 正式方法
+    // 关键点就是：
+    // 1) 线段树
+    // 2) 总是用技能的最左边缘刮死当前最左侧的没死的怪物
+    // 3) 然后向右找下一个没死的怪物，重复步骤2)
+    public static int minAoe3(int[] x, int[] hp, int range) {
+        int n = x.length;
+        int[] cover = new int[n];
+        int r = 0;
+        // cover[i] : 如果i位置是技能的最左侧，技能往右的range范围内，最右影响到哪
+        for (int i = 0; i < n; i++) {
+            while (r < n && x[r] - x[i] <= range) {
+                r++;
+            }
+            cover[i] = r - 1;
+        }
+        SegmentTree st = new SegmentTree(hp);
+        st.build(1, n, 1);
+        int ans = 0;
+        for (int i = 1; i <= n; i++) {
+            int leftHP = st.query(i, i, 1, n, 1);
+            if (leftHP > 0) {
+                ans += leftHP;
+                st.add(i, cover[i - 1] + 1, -leftHP, 1, n, 1);
+            }
+        }
+        return ans;
+    }
+
+    public static class SegmentTree1 {
+        private int MAXN;
+        private int[] arr;
+        private int[] sum;
+        private int[] lazy;
+
+        public SegmentTree1(int[] origin) {
+            MAXN = origin.length + 1;
+            arr = new int[MAXN];
+            for (int i = 1; i < MAXN; i++) {
+                arr[i] = origin[i - 1];
+            }
+            sum = new int[MAXN << 2];
+            lazy = new int[MAXN << 2];
+        }
+
+        private void pushUp(int rt) {
+            sum[rt] = sum[rt << 1] + sum[rt << 1 | 1];
+        }
+
+        private void pushDown(int rt, int ln, int rn) {
+            if (lazy[rt] != 0) {
+                lazy[rt << 1] += lazy[rt];
+                sum[rt << 1] += lazy[rt] * ln;
+                lazy[rt << 1 | 1] += lazy[rt];
+                sum[rt << 1 | 1] += lazy[rt] * rn;
+                lazy[rt] = 0;
+            }
+        }
+
+        public void build(int l, int r, int rt) {
+            if (l == r) {
+                sum[rt] = arr[l];
+                return;
+            }
+            int mid = (l + r) >> 1;
+            build(l, mid, rt << 1);
+            build(mid + 1, r, rt << 1 | 1);
+            pushUp(rt);
+        }
+
+        public void add(int L, int R, int C, int l, int r, int rt) {
+            if (L <= l && r <= R) {
+                sum[rt] += C * (r - l + 1);
+                lazy[rt] += C;
+                return;
+            }
+            int mid = (l + r) >> 1;
+            pushDown(rt, mid - l + 1, r - mid);
+            if (L <= mid) {
+                add(L, R, C, l, mid, rt << 1);
+            }
+            if (R > mid) {
+                add(L, R, C, mid + 1, r, rt << 1 | 1);
+            }
+            pushUp(rt);
+        }
+
+        public int query(int L, int R, int l, int r, int rt) {
+            if (L <= l && r <= R) {
+                return sum[rt];
+            }
+            int mid = (l + r) >> 1;
+            pushDown(rt, mid - l + 1, r - mid);
+            int ans = 0;
+            if (L <= mid) {
+                ans += query(L, R, l, mid, rt << 1);
+            }
+            if (R > mid) {
+                ans += query(L, R, mid + 1, r, rt << 1 | 1);
+            }
+            return ans;
+        }
+
+    }
+
     // 为了测试
     public static int[] copyArray(int[] arr) {
         int N = arr.length;
@@ -217,12 +322,17 @@ public class AOE {
         int range = 10000;
 
         start = System.currentTimeMillis();
+        System.out.println(minAoe3(x2, hp2, range));
+        end = System.currentTimeMillis();
+        System.out.println("运行时间 : " + (end - start) + " 毫秒");
+
+        start = System.currentTimeMillis();
         System.out.println(minAoe(x2, hp2, range));
         end = System.currentTimeMillis();
         System.out.println("运行时间 : " + (end - start) + " 毫秒");
 
         start = System.currentTimeMillis();
-        System.out.println(minAoe(x3, hp3, range));
+        System.out.println(right(x3, hp3, range));
         end = System.currentTimeMillis();
         System.out.println("运行时间 : " + (end - start) + " 毫秒");
     }
