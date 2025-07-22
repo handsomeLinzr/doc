@@ -51,26 +51,27 @@ public class AOE {
     }
 
     public static int minAoe(int[] x, int[] hp, int range) {
-        int n = x.length;
+        if (x == null || hp == null || x.length == 0 || hp.length == 0 || range == 0) {
+            return 0;
+        }
+        SegmentTree tree = new SegmentTree(hp);
+        tree.build(1, hp.length, 1);
         int[] cover = cover(x, range);
-        SegmentTree segmentTree = new SegmentTree(hp);
-        segmentTree.build(1, n, 1);
         int ans = 0;
-        for (int i = 1; i <= n; i++) {
-            int h = segmentTree.query(i, i, 1, n, 1);
-            if (h > 0) {
-                ans += h;
-                segmentTree.add(i, cover[i-1]+1, -h, 1, n, 1);
+        for (int i = 1; i <= hp.length; i++) {
+            int minus = tree.query(i, i, 1, hp.length, 1);
+            if (minus > 0) {
+                ans += minus;
+                tree.add(i, cover[i-1]+1, -minus, 1, hp.length, 1);
             }
         }
         return ans;
     }
 
-    // 返回范围内的最远受影响距离
     public static int[] cover(int[] x, int range) {
         int n = x.length;
         int[] cover = new int[n];
-        int r = 1;
+        int r = 0;
         for (int i = 0; i < n; i++) {
             while (r < n && x[r] - x[i] <= range) {
                 r++;
@@ -80,31 +81,28 @@ public class AOE {
         return cover;
     }
 
-    // 线段树
     public static class SegmentTree {
-        private int max;
-        private int[] arr;
-        private int[] sum;
-        private int[] lazy;
-
-        public SegmentTree(int[] origins) {
-            this.max = origins.length + 1;
-            arr = new int[max];
-            for (int i = 1; i < max; i++) {
-                arr[i] = origins[i-1];
-            }
+        int max;
+        int[] array;
+        int[] sum;
+        int[] lazy;
+        public SegmentTree(int[] arr) {
+            max = arr.length+1;
+            array = new int[max];
             sum = new int[max << 2];
             lazy = new int[max << 2];
+            for (int i = 0; i < arr.length; i++) {
+                array[i+1] = arr[i];
+            }
         }
-
         public void build(int left, int right, int n) {
             if (left == right) {
-                sum[n] = arr[left];
+                sum[n] = array[left];
                 return;
             }
             int middle = (left + right) >> 1;
-            build(left, middle, n << 1);
-            build(middle+1, right, n << 1 | 1);
+            build(left, middle, n<<1);
+            build(middle+1, right, n<<1|1);
             pushUp(n);
         }
 
@@ -114,8 +112,8 @@ public class AOE {
                 sum[n] += (right - left + 1) * C;
                 return;
             }
-            int middle = (right + left) >> 1;
-            pushDown(n, middle - left + 1, right - middle);
+            int middle = (left+right) >> 1;
+            pushDown(n, middle - left+1, right - middle);
             if (L <= middle) {
                 add(L, R, C, left, middle, n<<1);
             }
@@ -129,30 +127,28 @@ public class AOE {
             if (L <= left && R >= right) {
                 return sum[n];
             }
-            int middle = (left + right) >> 1;
-            pushDown(n, middle - left + 1, right - middle);
             int ans = 0;
-            if (L <= middle) {
-                ans += query(L, R, left, middle, n << 1);
+            int middle = (left + right) >> 1;
+            pushDown(n, middle-left+1, right-middle);
+            if (L<= middle) {
+                ans += query(L, R, left, middle, n<<1);
             }
             if (R > middle) {
-                ans += query(L, R, middle+1, right, n << 1 | 1);
+                ans += query(L, R, middle+1, right, n<<1|1);
             }
             return ans;
         }
 
-        public void pushUp(int n) {
-            sum[n] = sum[n << 1] + sum[n << 1 | 1];
+        private void pushUp(int n) {
+            sum[n] = sum[n<<1] + sum[n<<1|1];
         }
-
         private void pushDown(int n, int ln, int rn) {
             if (lazy[n] != 0) {
-                lazy[n<<1] += lazy[n];
-                lazy[n<<1|1] += lazy[n];
-                sum[n<<1] += ln * lazy[n];
-                sum[n<<1 | 1] += rn * lazy[n];
+                lazy[n << 1] += lazy[n];
+                lazy[n << 1 | 1] += lazy[n];
+                sum[n << 1] += ln * lazy[n];
+                sum[n << 1 | 1] += rn * lazy[n];
                 lazy[n] = 0;
-                sum[n] = 0;
             }
         }
     }
@@ -194,82 +190,6 @@ public class AOE {
             }
         }
         return ans;
-    }
-
-    public static class SegmentTree1 {
-        private int MAXN;
-        private int[] arr;
-        private int[] sum;
-        private int[] lazy;
-
-        public SegmentTree1(int[] origin) {
-            MAXN = origin.length + 1;
-            arr = new int[MAXN];
-            for (int i = 1; i < MAXN; i++) {
-                arr[i] = origin[i - 1];
-            }
-            sum = new int[MAXN << 2];
-            lazy = new int[MAXN << 2];
-        }
-
-        private void pushUp(int rt) {
-            sum[rt] = sum[rt << 1] + sum[rt << 1 | 1];
-        }
-
-        private void pushDown(int rt, int ln, int rn) {
-            if (lazy[rt] != 0) {
-                lazy[rt << 1] += lazy[rt];
-                sum[rt << 1] += lazy[rt] * ln;
-                lazy[rt << 1 | 1] += lazy[rt];
-                sum[rt << 1 | 1] += lazy[rt] * rn;
-                lazy[rt] = 0;
-            }
-        }
-
-        public void build(int l, int r, int rt) {
-            if (l == r) {
-                sum[rt] = arr[l];
-                return;
-            }
-            int mid = (l + r) >> 1;
-            build(l, mid, rt << 1);
-            build(mid + 1, r, rt << 1 | 1);
-            pushUp(rt);
-        }
-
-        public void add(int L, int R, int C, int l, int r, int rt) {
-            if (L <= l && r <= R) {
-                sum[rt] += C * (r - l + 1);
-                lazy[rt] += C;
-                return;
-            }
-            int mid = (l + r) >> 1;
-            pushDown(rt, mid - l + 1, r - mid);
-            if (L <= mid) {
-                add(L, R, C, l, mid, rt << 1);
-            }
-            if (R > mid) {
-                add(L, R, C, mid + 1, r, rt << 1 | 1);
-            }
-            pushUp(rt);
-        }
-
-        public int query(int L, int R, int l, int r, int rt) {
-            if (L <= l && r <= R) {
-                return sum[rt];
-            }
-            int mid = (l + r) >> 1;
-            pushDown(rt, mid - l + 1, r - mid);
-            int ans = 0;
-            if (L <= mid) {
-                ans += query(L, R, l, mid, rt << 1);
-            }
-            if (R > mid) {
-                ans += query(L, R, mid + 1, r, rt << 1 | 1);
-            }
-            return ans;
-        }
-
     }
 
     // 为了测试
