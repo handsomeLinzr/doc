@@ -96,9 +96,9 @@ public class Table_SBT {
             SBTNode<K, V> cur = root;
             SBTNode<K, V> pre = root;
             while (cur != null) {
+                pre = cur;
                 int compare = key.compareTo(cur.key);
                 if (compare == 0) {
-                    pre = cur;
                     break;
                 } else if (compare > 0) {
                     cur = cur.right;
@@ -180,39 +180,37 @@ public class Table_SBT {
                     node = node.left;
                 } else {
 //                    SBTNode<K, V> l = node.left;
-//                    // 左子树数量减1
-//                    l.size--;
-//                    // 左子节点的最右
-//                    SBTNode<K, V> rightest = l;
-//                    // 左子树最右的父节点
-//                    SBTNode<K, V> rightestParent = null;
-//                    while (rightest.right != null) {
-//                        rightestParent = rightest;
-//                        rightest = rightest.right;
-//                        // 数量每层都减1
-//                        rightest.size--;
-//                    }
-//                    if (rightestParent != null) {
-//                        rightestParent.right = rightest.left;
-//                        rightest.left = node.left;
-//                    }
-//                    rightest.right = node.right;
-//                    rightest.size = (rightest.left == null?0:rightest.left.size) + rightest.right.size + 1;
-//                    node = rightest;
-
-
-                    SBTNode<K, V> l = node.left;
                     // 左子节点的最右
-                    SBTNode<K, V> rightest = l;
+                    SBTNode<K, V> rightest = node.left;
+                    // 左子树数量减1
+                    rightest.size--;
+                    // 左子树最右的父节点
+                    SBTNode<K, V> rightestParent = null;
                     while (rightest.right != null) {
+                        rightestParent = rightest;
                         rightest = rightest.right;
+                        // 数量每层都减1
+                        rightest.size--;
                     }
-
-                    l = delete(l, rightest.key);
-                    rightest.left = l;
+                    if (rightestParent != null) {
+                        rightestParent.right = rightest.left;
+                        rightest.left = node.left;
+                    }
                     rightest.right = node.right;
                     rightest.size = (rightest.left == null?0:rightest.left.size) + rightest.right.size + 1;
                     node = rightest;
+//                    SBTNode<K, V> l = node.left;
+//                    // 左子节点的最右
+//                    SBTNode<K, V> rightest = l;
+//                    while (rightest.right != null) {
+//                        rightest = rightest.right;
+//                    }
+//
+//                    l = delete(l, rightest.key);
+//                    rightest.left = l;
+//                    rightest.right = node.right;
+//                    rightest.size = (rightest.left == null?0:rightest.left.size) + rightest.right.size + 1;
+//                    node = rightest;
                 }
             }
             return node;

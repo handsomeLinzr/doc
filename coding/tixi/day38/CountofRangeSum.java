@@ -152,7 +152,7 @@ public class CountofRangeSum {
             right.size = node.size;
             right.all = node.all;
             node.size = (node.left == null ? 0 : node.left.size) + (node.right == null ? 0 : node.right.size) + 1;
-            node.all = (node.left == null ? 0 : node.left.size) + (node.right == null ? 0 : node.right.size) + nodeSame;
+            node.all = (node.left == null ? 0 : node.left.all) + (node.right == null ? 0 : node.right.all) + nodeSame;
             return right;
         }
 
